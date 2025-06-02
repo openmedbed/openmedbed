@@ -1,1 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>fReQ Player 1.0.1</title>
+  <meta name="theme-color" content="#181828" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+  <style>
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      background: #181828;
+      color: #f4f4f4;
+      font-family: 'Segoe UI', sans-serif;
+      font-size: 14px;
+    }
+
+    #freqPlayer {
+      position: fixed;
+      bottom: 0;
+      right: 0;
+      width: 420px;
+      max-height: 94vh;
+      background: #2c2c3e;
+      border-top-left-radius: 12px;
+      border-top-right-radius: 12px;
+      box-shadow: 0 0 18px rgba(0,0,0,0.5);
+      display: flex;
+      flex-direction: column;
+      z-index: 9999;
+      transition: transform 0.3s ease;
+    }
+
+    #freqPlayer.collapsed {
+      transform: translateY(calc(100% - 44px));
+    }
+
+    #freqPlayerHeader {
+      background: #1a1a2d;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      font-weight: bold;
+      border-top-left-radius: 12px;
+      border-top-right-radius: 12px;
+    }
+
+    #freqPlayerHeader span {
+      font-size: 18px;
+      transition: transform 0.3s ease;
+    }
+
+    #freqPlayer.collapsed #freqPlayerHeader span {
+      transform: rotate(-90deg);
+    }
+
+    #freqPlayerTabs {
+      display: flex;
+      border-bottom: 1px solid #444;
+    }
+
+    .tab-button {
+      flex: 1;
+      text-align: center;
+      padding: 10px;
+      background: #2c2c3e;
+      border: none;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .tab-button.active {
+      background: #444466;
+    }
+
+    .tab-content {
+      display: none;
+      padding: 16px;
+      overflow-y: auto;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    input, select, button, textarea {
+      font-size: 13px;
+      padding: 8px;
+      border: none;
+      border-radius: 6px;
+      background: #3a3a4a;
+      color: #fff;
+    }
+
+    button {
+      background: #5a5acc;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    button:hover {
+      background: #7070ff;
+    }
+
+    .sequence-item {
+      background: #222;
+      padding: 8px;
+      margin-bottom: 6px;
+      border-left: 4px solid #6a5acd;
+      border-radius: 4px;
+      line-height: 1.5em;
+      cursor: pointer;
+    }
+
+    .oscilloscope {
+      width: 100%;
+      height: 100px;
+      margin-top: 14px;
+      background: #111;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .readout {
+      font-family: monospace;
+      font-size: 13px;
+      margin-top: 8px;
+      text-align: center;
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 10px 0;
+    }
+
+    .label-bold {
+      font-weight: bold;
+    }
+
+    .small-note {
+      font-size: 12px;
+      opacity: 0.8;
+      margin-left: 6px;
+    }
+
+    .volume-slider {
+      flex: 1;
+    }
+
+    .control-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .mode-switcher {
+      margin: 12px 16px 0 16px;
+      display: flex;
+      gap: 8px;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .mode-switcher select {
+      flex-grow: 1;
+    }
+
+    .subharmonic-warning {
+      background: #662222;
+      padding: 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      margin-top: 6px;
+    }
+
+    .full-width-button {
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    @media (max-width: 480px) {
+      #freqPlayer {
+        width: 100vw;
+        max-height: 96vh;
+        font-size: 13px;
+      }
+      .tab-button {
+        font-size: 13px;
+      }
+      input, select, button, textarea {
+        font-size: 13px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="freqPlayer" class="collapsed">
+    <div id="freqPlayerHeader" onclick="toggleFreqPlayer()">
+      fReQ Player 1.0.1
+      <span>▼</span>
+    </div>
+
+    <!-- 👤 Mode Selector -->
+    <div class="mode-switcher">
+      <label for="modeSelect">Mode:</label>
+      <select id="modeSelect" onchange="updateMode()">
+        <option value="user">User</option>
+        <option value="practitioner">Practitioner</option>
+        <option value="researcher">Researcher</option>
+      </select>
+
+      <label id="mobileSafeToggle" for="mobileSafe" style="display:inline-block;">
+        <input type="checkbox" id="mobileSafe" onchange="toggleSubharmonics()" />
+        Subharmonic Mode
+      </label>
+    </div>
+
+    <!-- 🎛 Tabs -->
+    <div id="freqPlayerTabs">
+      <button class="tab-button active" title="Lookup Condition Frequencies" onclick="switchTab('lookupTab')">🔍 Lookup</button>
+      <button class="tab-button" title="Create and play custom tone playlists" onclick="switchTab('playerTab')">🎼 Player</button>
+      <button class="tab-button" title="Manual frequency tone generator" onclick="switchTab('tunerTab')">🎯 Tuner</button>
+      <button class="tab-button" title="Save or load saved sessions" onclick="switchTab('presetsTab')">💾 Presets</button>
+    </div>
+
+    <!-- 🎼 PLAYER TAB -->
+    <div id="playerTab" class="tab-content">
+      <label><strong>Label</strong></label>
+      <input id="labelInput" placeholder="e.g. Deep Sleep Blend" />
+
+      <div class="input-row">
+        <input id="freqInput" placeholder="Frequency (Hz)" value="528" />
+        <input id="durationInput" placeholder="Seconds" value="180" />
+      </div>
+
+      <div class="input-row">
+        <select id="waveformSelect">
+          <option value="sine">Sine</option>
+          <option value="triangle">Triangle</option>
+          <option value="square">Square</option>
+          <option value="sawtooth">Sawtooth</option>
+        </select>
+        <button onclick="addToSequence()">➕ Add Frequency</button>
+      </div>
+
+      <hr style="border-color: #333; margin: 12px 0;" />
+
+      <label class="label-bold">Sweep Generator</label>
+      <div class="input-row">
+        <input id="sweepFrom" placeholder="Start Hz" value="1" />
+        <input id="sweepTo" placeholder="End Hz" value="7" />
+        <input id="sweepStep" placeholder="Step Hz" value="0.5" />
+      </div>
+
+      <div class="input-row">
+        <input id="sweepDuration" placeholder="Seconds per step" value="120" />
+        <select id="sweepWaveform">
+          <option value="sine">Sine</option>
+          <option value="triangle">Triangle</option>
+          <option value="square">Square</option>
+          <option value="sawtooth">Sawtooth</option>
+        </select>
+        <input id="sweepLabel" placeholder="Label (optional)" />
+      </div>
+
+      <div class="checkbox-row">
+        <input type="checkbox" id="replaceStack" />
+        <label for="replaceStack">Replace playlist</label>
+      </div>
+
+      <button onclick="addSweepToSequence()">➕ Add Sweep</button>
+
+      <h4>🧾 Playlist</h4>
+      <div id="sequenceList"></div>
+
+      <!-- ✅ New Clear Playlist Button -->
+      <button class="full-width-button" style="margin-top: 6px;" onclick="clearPlaylist()">🧹 Clear Playlist</button>
+
+      <div class="control-row">
+        <button onclick="playSequence()">▶</button>
+        <button onclick="pauseSequence()">⏸</button>
+        <button onclick="nextStep()">⏭ Skip</button>
+        <button onclick="stopSequence()">⏹</button>
+        <input class="volume-slider" type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.5" />
+      </div>
+
+      <div class="input-row">
+        <select id="loopMode">
+          <option value="once">Once</option>
+          <option value="n">Repeat N</option>
+          <option value="infinite">Loop ∞</option>
+        </select>
+        <input id="loopCount" value="1" />
+      </div>
+
+      <div id="mobileWarning" class="subharmonic-warning" style="display: none;">
+        ⚠️ Frequencies have been subharmonically adjusted for mobile-safe output.
+      </div>
+
+      <div class="readout">
+        🎧 <span id="nowLabel">---</span><br />
+        🔢 <span id="nowFreq">---</span> Hz<br />
+        ⏱ <span id="nowElapsed">0</span>s / <span id="nowTotal">0</span>s
+      </div>
+
+      <canvas id="oscilloscope" class="oscilloscope"></canvas>
+    </div>
+    <!-- 🔍 LOOKUP TAB -->
+    <div id="lookupTab" class="tab-content active">
+      <h4>🔍 Lookup Frequencies by Condition</h4>
+      <input id="lookupInput" placeholder="e.g. sleep, pain, focus..." oninput="searchLookup()" />
+      <p style="font-size: 13px; opacity: 0.7;">🛈 Start by typing a condition above (e.g. sleep, pain, focus)...</p>
+      <div id="lookupResults" style="margin-top: 12px;"></div>
+    </div>
+
+    <!-- 🎯 TUNER TAB -->
+    <div id="tunerTab" class="tab-content">
+      <h4>🎯 Tuner</h4>
+      <div class="input-row">
+        <input id="tunerFreq" type="number" value="432" placeholder="Frequency (Hz)" />
+        <select id="tunerWaveform">
+          <option value="sine">Sine</option>
+          <option value="triangle">Triangle</option>
+          <option value="square">Square</option>
+          <option value="sawtooth">Sawtooth</option>
+        </select>
+      </div>
+      <div class="input-row">
+        <input type="range" id="tunerVolume" min="0" max="1" step="0.01" value="0.5" />
+      </div>
+      <div class="control-row">
+        <button onclick="playTuner()">▶ Play</button>
+        <button onclick="stopTuner()">⏹ Stop</button>
+      </div>
+    </div>
+
+    <!-- 💾 PRESETS TAB -->
+    <div id="presetsTab" class="tab-content">
+      <h4>💾 Save Current Playlist</h4>
+      <input id="presetName" placeholder="e.g. Healing Session 1" />
+      <button class="full-width-button" onclick="savePreset()">💾 Save</button>
+
+      <h4 style="margin-top: 16px;">📂 Load Playlist</h4>
+      <div id="presetList" class="preset-list"></div>
+
+      <h4 style="margin-top: 16px;">⬇ Export Playlist as .json</h4>
+      <button class="full-width-button" onclick="exportCurrentPreset()">⬇ Export JSON</button>
+    </div>
+  </div>
+<script>
+let audioCtx, oscillator, gainNode, analyser;
+let sequence = [], isPlaying = false, isPaused = false;
+let currentGroup = 0, currentToneIndex = 0, countdown = 0, elapsed = 0, interval = null;
+let loopType = "once", loopCount = 1, loopCounter = 0;
+let lastFreq, lastWaveform, lastLabel;
+let oscCanvas, oscCtx, anim, tunerOsc = null;
+let mobileSafeMode = false;
+let allFrequencyData = [];
+
+// 🔁 Tabs
+function switchTab(id) {
+  document.querySelectorAll(".tab-button").forEach(b => b.classList.remove("active"));
+  document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  document.querySelector(`[onclick="switchTab('${id}')"]`).classList.add("active");
+}
+
+// ⬇ Toggle Panel
+function toggleFreqPlayer() {
+  document.getElementById("freqPlayer").classList.toggle("collapsed");
+}
+
+// 👤 Mode Logic
+function updateMode() {
+  const mode = document.getElementById("modeSelect").value;
+  const toggleBox = document.getElementById("mobileSafeToggle");
+  if (mode === "user") {
+    toggleBox.style.display = "inline-block";
+  } else {
+    toggleBox.style.display = "none";
+    mobileSafeMode = false;
+    document.getElementById("mobileSafe").checked = false;
+    document.getElementById("mobileWarning").style.display = "none";
+  }
+}
+
+// 📱 Subharmonic Toggle
+function toggleSubharmonics() {
+  mobileSafeMode = document.getElementById("mobileSafe").checked;
+  document.getElementById("mobileWarning").style.display = mobileSafeMode ? "block" : "none";
+}
+
+// 🧹 Clear Playlist
+function clearPlaylist() {
+  if (!sequence.length || confirm("Clear all frequencies from playlist?")) {
+    stopSequence();
+    sequence = [];
+    renderSequence();
+    updateDisplay(null);
+  }
+}
+
+// 🔊 Audio Setup
+function initAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    gainNode = audioCtx.createGain();
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 256;
+    gainNode.connect(analyser);
+    analyser.connect(audioCtx.destination);
+  }
+  gainNode.gain.value = parseFloat(document.getElementById("volumeSlider").value);
+}
+document.getElementById("volumeSlider").addEventListener("input", e => {
+  if (gainNode) gainNode.gain.setValueAtTime(parseFloat(e.target.value), audioCtx.currentTime);
+});
+
+// ➕ Add Tone
+function addToSequence() {
+  const label = document.getElementById("labelInput").value || "Tone";
+  let freq = parseFloat(document.getElementById("freqInput").value);
+  const dur = parseInt(document.getElementById("durationInput").value);
+  const waveform = document.getElementById("waveformSelect").value;
+
+  if (!Number.isFinite(freq) || !Number.isFinite(dur)) return alert("Enter valid frequency and duration.");
+  if (mobileSafeMode && freq > 200) freq = freq / 4;
+  if (document.getElementById("replaceStack").checked) sequence = [];
+
+  sequence.push({ type: "tone", label, freq, dur, waveform });
+  renderSequence();
+  document.getElementById("freqInput").value = "";
+  document.getElementById("labelInput").value = "";
+}
+
+// ➕ Add Sweep
+function addSweepToSequence() {
+  let from = parseFloat(document.getElementById("sweepFrom").value);
+  let to = parseFloat(document.getElementById("sweepTo").value);
+  const step = parseFloat(document.getElementById("sweepStep").value);
+  const dur = parseInt(document.getElementById("sweepDuration").value);
+  const waveform = document.getElementById("sweepWaveform").value;
+  const label = document.getElementById("sweepLabel").value || `Sweep ${from}–${to}`;
+
+  if (!Number.isFinite(from) || !Number.isFinite(to) || !Number.isFinite(step) || !Number.isFinite(dur)) {
+    alert("Enter valid sweep values.");
+    return;
+  }
+
+  if (mobileSafeMode) {
+    from = from > 200 ? from / 4 : from;
+    to = to > 200 ? to / 4 : to;
+  }
+
+  const freqs = [];
+  for (let f = from; f <= to + step / 2; f += step) freqs.push(parseFloat(f.toFixed(3)));
+  if (document.getElementById("replaceStack").checked) sequence = [];
+
+  sequence.push({ type: "sweep", label, freqs, dur, waveform });
+  renderSequence();
+}
+
+// 🧾 Playlist Viewer
+function renderSequence() {
+  const list = document.getElementById("sequenceList");
+  list.innerHTML = "";
+  sequence.forEach((item, i) => {
+    const div = document.createElement("div");
+    div.className = "sequence-item";
+    div.innerHTML = item.type === "tone"
+      ? `<strong>${item.label}</strong><br>${item.freq} Hz, ${item.dur}s, ${item.waveform}`
+      : `<strong>${item.label}</strong><br>${item.freqs.length} steps: ${item.freqs[0]}–${item.freqs.at(-1)} Hz<br>${item.dur}s/step, ${item.waveform}`;
+    list.appendChild(div);
+  });
+}
+
+// ▶ Playback
+function playSequence() {
+  if (!sequence.length) return;
+  initAudio();
+  loopType = document.getElementById("loopMode").value;
+  loopCount = parseInt(document.getElementById("loopCount").value) || 1;
+  loopCounter = 0;
+  currentGroup = 0;
+  currentToneIndex = 0;
+  isPlaying = true;
+  isPaused = false;
+  playNextTone();
+}
+
+function playNextTone() {
+  clearInterval(interval);
+  stopTone();
+  if (currentGroup >= sequence.length) {
+    if (loopType === "n" && ++loopCounter < loopCount) {
+      currentGroup = 0; currentToneIndex = 0;
+    } else if (loopType === "infinite") {
+      currentGroup = 0; currentToneIndex = 0;
+    } else {
+      isPlaying = false;
+      updateDisplay(null);
+      return;
+    }
+  }
+
+  const item = sequence[currentGroup];
+  if (item.type === "tone") {
+    outputTone(item.freq, item.dur, item.waveform, item.label);
+  } else {
+    const f = item.freqs[currentToneIndex];
+    outputTone(f, item.dur, item.waveform, `${item.label} – ${f} Hz`);
+  }
+}
+
+function outputTone(freq, dur, waveform, label, resume = false) {
+  oscillator = audioCtx.createOscillator();
+  oscillator.type = waveform;
+  oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
+  oscillator.connect(gainNode);
+  oscillator.start();
+  gainNode.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+  gainNode.gain.linearRampToValueAtTime(parseFloat(document.getElementById("volumeSlider").value), audioCtx.currentTime + 0.1);
+
+  lastFreq = freq;
+  lastWaveform = waveform;
+  lastLabel = label;
+  updateDisplay({ label, freq, dur });
+
+  countdown = dur;
+  elapsed = resume ? dur - countdown : 0;
+
+  drawOscilloscope();
+  interval = setInterval(() => {
+    if (!isPaused) {
+      elapsed++;
+      countdown--;
+      updateDisplay({ label, freq, dur });
+      if (countdown <= 0) {
+        currentToneIndex++;
+        if (sequence[currentGroup]?.freqs?.[currentToneIndex] == null) {
+          currentGroup++; currentToneIndex = 0;
+        }
+        playNextTone();
+      }
+    }
+  }, 1000);
+}
+
+function pauseSequence() {
+  if (!isPlaying) return;
+  if (!isPaused) {
+    isPaused = true;
+    stopTone();
+    clearInterval(interval);
+  } else {
+    isPaused = false;
+    outputTone(lastFreq, countdown, lastWaveform, lastLabel, true);
+  }
+}
+
+function stopSequence() {
+  isPaused = false;
+  isPlaying = false;
+  currentGroup = 0;
+  currentToneIndex = 0;
+  clearInterval(interval);
+  stopTone();
+  updateDisplay(null);
+}
+
+function nextStep() {
+  stopTone();
+  clearInterval(interval);
+  currentToneIndex++;
+  if (sequence[currentGroup]?.freqs?.[currentToneIndex] == null) {
+    currentGroup++; currentToneIndex = 0;
+  }
+  playNextTone();
+}
+
+function stopTone() {
+  try {
+    if (oscillator) {
+      const now = audioCtx.currentTime;
+      gainNode.gain.linearRampToValueAtTime(0.0001, now + 0.05);
+      oscillator.stop(now + 0.05);
+      oscillator.disconnect();
+    }
+  } catch {}
+  oscillator = null;
+}
+
+function updateDisplay(step) {
+  document.getElementById("nowLabel").textContent = step?.label || "---";
+  document.getElementById("nowFreq").textContent = step?.freq || "---";
+  document.getElementById("nowElapsed").textContent = elapsed || 0;
+  document.getElementById("nowTotal").textContent = step?.dur || 0;
+}
+
+// 🎯 Tuner
+function playTuner() {
+  stopTuner();
+  initAudio();
+  tunerOsc = audioCtx.createOscillator();
+  const freq = parseFloat(document.getElementById("tunerFreq").value);
+  const waveform = document.getElementById("tunerWaveform").value;
+  const vol = parseFloat(document.getElementById("tunerVolume").value);
+  const tunerGain = audioCtx.createGain();
+  tunerOsc.type = waveform;
+  tunerOsc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+  tunerGain.gain.value = vol;
+  tunerOsc.connect(tunerGain).connect(audioCtx.destination);
+  tunerOsc.start();
+}
+function stopTuner() {
+  try { tunerOsc?.stop(); } catch {}
+  tunerOsc?.disconnect();
+  tunerOsc = null;
+}
+
+// 💾 Presets
+function savePreset() {
+  const name = document.getElementById("presetName").value.trim();
+  if (!name || !sequence.length) return alert("Enter a preset name and at least one tone.");
+  const all = JSON.parse(localStorage.getItem("freqPresets") || "{}");
+  all[name] = sequence;
+  localStorage.setItem("freqPresets", JSON.stringify(all));
+  renderPresetList();
+  document.getElementById("presetName").value = "";
+  alert(`✅ Preset saved: ${name}`);
+}
+function renderPresetList() {
+  const list = document.getElementById("presetList");
+  const all = JSON.parse(localStorage.getItem("freqPresets") || "{}");
+  list.innerHTML = "";
+  Object.keys(all).forEach(name => {
+    const div = document.createElement("div");
+    div.className = "preset-item";
+    div.textContent = name;
+    div.onclick = () => {
+      sequence = all[name];
+      renderSequence();
+      switchTab("playerTab");
+    };
+    list.appendChild(div);
+  });
+}
+function exportCurrentPreset() {
+  if (!sequence.length) return alert("Playlist is empty.");
+  const blob = new Blob([JSON.stringify(sequence, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `fReQ_playlist_${Date.now()}.json`;
+  a.click();
+}
+
+// 📈 Oscilloscope
+function drawOscilloscope() {
+  if (!oscCanvas) {
+    oscCanvas = document.getElementById("oscilloscope");
+    oscCtx = oscCanvas.getContext("2d");
+  }
+  cancelAnimationFrame(anim);
+  function draw() {
+    const buffer = new Float32Array(analyser.fftSize);
+    analyser.getFloatTimeDomainData(buffer);
+    oscCtx.clearRect(0, 0, oscCanvas.width, oscCanvas.height);
+    oscCtx.beginPath();
+    const slice = oscCanvas.width / buffer.length;
+    let x = 0;
+    for (let i = 0; i < buffer.length; i++) {
+      const y = (1 - buffer[i]) * oscCanvas.height / 2;
+      i === 0 ? oscCtx.moveTo(x, y) : oscCtx.lineTo(x, y);
+      x += slice;
+    }
+    oscCtx.strokeStyle = "#00ff88";
+    oscCtx.lineWidth = 2;
+    oscCtx.stroke();
+    anim = requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// 🔍 Lookup
+function searchLookup() {
+  const term = document.getElementById("lookupInput").value.trim().toLowerCase();
+  const results = allFrequencyData.filter(entry =>
+    (entry.conditions || []).some(c => c.toLowerCase().includes(term))
+  );
+  renderLookupResults(results);
+}
+function renderLookupResults(results) {
+  const container = document.getElementById("lookupResults");
+  container.innerHTML = "";
+  if (!results.length) {
+    container.innerHTML = "<p style='opacity: 0.6;'>No results found.</p>";
+    return;
+  }
+  results.forEach((entry, index) => {
+    const div = document.createElement("div");
+    div.className = "sequence-item";
+    div.innerHTML = `
+      <strong>${entry.label}</strong><br>
+      ${entry.frequency} Hz, Tier ${entry.evidenceTier || "X"}<br>
+      <button onclick='addLookupToSequence(${index})'>➕ Add to Playlist</button>
+      <a href="${entry.reference?.url}" target="_blank" style="float:right; font-size:12px;">📖</a>
+    `;
+    container.appendChild(div);
+  });
+}
+function addLookupToSequence(index) {
+  const entry = allFrequencyData[index];
+  if (!entry) return alert("Entry not found.");
+  sequence.push({
+    type: "tone",
+    label: entry.label,
+    freq: entry.frequency,
+    dur: entry.duration || 180,
+    waveform: "sine"
+  });
+  renderSequence();
+}
+
+// 🧠 Load data
+window.addEventListener("DOMContentLoaded", () => {
+  renderPresetList();
+  updateMode();
+  fetch("frequencies_extended.json")
+    .then(res => res.json())
+    .then(json => { allFrequencyData = json; })
+    .catch(err => { console.error("Failed to load frequency data:", err); });
+});
+</script>
+
+</body>
+</html>
