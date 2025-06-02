@@ -1,4 +1,4 @@
-##test of edit
+Just a hardware guy, wasting all his time trying to code!
 
 <!--
 **openmedbed/openmedbed** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
