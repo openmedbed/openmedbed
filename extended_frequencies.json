@@ -1,0 +1,65 @@
+[
+  {
+    "label": "Anxiety Relief - Theta",
+    "frequency": 6.3,
+    "duration": 300,
+    "evidenceTier": "1",
+    "conditions": ["anxiety", "relaxation", "stress"],
+    "source": "Peer-Reviewed",
+    "note": "Used in guided meditation and cognitive therapy studies.",
+    "protocol": ["Relaxation", "AnxietyRelease"],
+    "reference": {
+      "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3619319/"
+    }
+  },
+  {
+    "label": "Immune Boost - White Blood Cell Activation",
+    "frequency": 728,
+    "duration": 180,
+    "evidenceTier": "2",
+    "conditions": ["immune", "inflammation", "infection"],
+    "source": "CAFL",
+    "note": "Often used in frequency-based pathogen disruption protocols.",
+    "protocol": ["ImmuneSupport"],
+    "reference": {
+      "url": "https://www.electroherbalism.com/Bioelectronics/FrequenciesandAnecdotes.htm"
+    }
+  },
+  {
+    "label": "Migraine - Acute Pain",
+    "frequency": 146,
+    "duration": 240,
+    "evidenceTier": "1",
+    "conditions": ["migraine", "pain", "headache"],
+    "source": "NIH Trial",
+    "note": "Shown to reduce cortical hyperexcitability.",
+    "protocol": ["PainRelief"],
+    "reference": {
+      "url": "https://www.ncbi.nlm.nih.gov/pubmed/29709235"
+    }
+  },
+  {
+    "label": "Mood Enhancement - Serotonin",
+    "frequency": 110.0,
+    "duration": 180,
+    "source": "Healy",
+    "evidenceTier": "2",
+    "conditions": ["mood", "serotonin"],
+    "protocol": ["Mood_Serotonin"],
+    "reference": {
+      "url": "https://healy.shop"
+    }
+  },
+  {
+    "label": "Chakra Crown Activation",
+    "frequency": 963.0,
+    "duration": 180,
+    "source": "Solfeggio",
+    "evidenceTier": "3",
+    "conditions": ["spirituality", "balance"],
+    "protocol": ["Chakra_Crown"],
+    "reference": {
+      "url": "https://en.wikipedia.org/wiki/Solfeggio_frequencies"
+    }
+  }
+]
