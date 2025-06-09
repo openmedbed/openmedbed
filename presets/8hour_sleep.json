@@ -1,0 +1,37 @@
+[
+  {
+    "type": "tone",
+    "label": "Deep Delta Induction (1 Hz)",
+    "freq": 1,
+    "dur": 7200,
+    "waveform": "sine"
+  },
+  {
+    "type": "tone",
+    "label": "Moderate Delta Maintenance (2 Hz)",
+    "freq": 2,
+    "dur": 7200,
+    "waveform": "sine"
+  },
+  {
+    "type": "tone",
+    "label": "Theta Transition (5 Hz)",
+    "freq": 5,
+    "dur": 7200,
+    "waveform": "sine"
+  },
+  {
+    "type": "tone",
+    "label": "Alpha Relaxation (10 Hz)",
+    "freq": 10,
+    "dur": 5400,
+    "waveform": "sine"
+  },
+  {
+    "type": "tone",
+    "label": "Beta Awake Prep (15 Hz)",
+    "freq": 15,
+    "dur": 1800,
+    "waveform": "sine"
+  }
+]

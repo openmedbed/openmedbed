@@ -1,0 +1,44 @@
+[
+  {
+    "type": "tone",
+    "label": "Solfeggio 396 Hz",
+    "freq": 396,
+    "dur": 180,
+    "waveform": "sine"
+  },
+  {
+    "type": "tone",
+    "label": "Solfeggio 417 Hz",
+    "freq": 417,
+    "dur": 180,
+    "waveform": "sine"
+  },
+  {
+    "type": "tone",
+    "label": "Solfeggio 528 Hz",
+    "freq": 528,
+    "dur": 180,
+    "waveform": "sine"
+  },
+  {
+    "type": "tone",
+    "label": "Solfeggio 639 Hz",
+    "freq": 639,
+    "dur": 180,
+    "waveform": "sine"
+  },
+  {
+    "type": "tone",
+    "label": "Solfeggio 741 Hz",
+    "freq": 741,
+    "dur": 180,
+    "waveform": "sine"
+  },
+  {
+    "type": "tone",
+    "label": "Solfeggio 852 Hz",
+    "freq": 852,
+    "dur": 180,
+    "waveform": "sine"
+  }
+]

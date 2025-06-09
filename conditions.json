@@ -1,0 +1,80 @@
+// app.js v1.4 — Step 3: conditions.json & treatment option integration
+
+// ─── Utility ─────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+
+// ─── 1) Load & hold conditions → treatments data ────────────────
+let conditionData = [];
+function populateConditionDatalist() {
+  const dl = $('conditionList');
+  dl.innerHTML = '';
+  conditionData.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.condition;
+    dl.append(opt);
+  });
+}
+
+function onConditionChosen(cond) {
+  const entry = conditionData.find(c => c.condition === cond);
+  const pane = $('treatment-pane');
+  const sel  = $('treatmentSelect');
+  if (!entry) {
+    pane.style.display = 'none';
+    sel.disabled = true;
+    return;
+  }
+  // show & populate treatments
+  pane.style.display = '';
+  sel.innerHTML = '<option value="">-- Select a treatment --</option>';
+  entry.treatments.forEach((t,i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = t.label;
+    sel.append(opt);
+  });
+  sel.disabled = false;
+}
+
+// ─── 2) DOM Ready: wire up UI ──────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  const conditionInput    = $('conditionInput');
+  const searchBtn         = $('searchBtn');
+  const treatmentSelect   = $('treatmentSelect');
+
+  // 2.1) Fetch conditions.json
+  fetch('conditions.json')
+    .then(r => r.json())
+    .then(json => {
+      conditionData = json;
+      populateConditionDatalist();
+    })
+    .catch(err => console.error('Could not load conditions.json:', err));
+
+  // 2.2) When user clicks Search on a condition
+  searchBtn.addEventListener('click', () => {
+    const cond = conditionInput.value.trim();
+    onConditionChosen(cond);
+    // === your existing searchCondition() logic ===
+    searchCondition(); // assume this function from v1.3 is defined
+  });
+  conditionInput.addEventListener('keyup', e => {
+    if (e.key === 'Enter') searchBtn.click();
+  });
+
+  // 2.3) When user picks a treatment, filter center-pane by its freqs
+  treatmentSelect.addEventListener('change', () => {
+    const cond = conditionInput.value.trim();
+    const idx  = parseInt(treatmentSelect.value, 10);
+    if (isNaN(idx)) return;
+    const freqList =
+      conditionData
+        .find(c => c.condition === cond)
+        .treatments[idx].frequencies;
+    // filter your freqDatabase for those frequencies
+    searchResults = freqDatabase.filter(e => freqList.includes(e.frequency));
+    renderResults(); // assume this function from v1.3 is defined
+  });
+
+  // 2.4) ...the rest of your v1.3 setup: entry form, player, presets, etc.
+});

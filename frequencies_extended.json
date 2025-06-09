@@ -1,0 +1,38 @@
+[
+  {
+    "label": "Deep Sleep Blend",
+    "frequency": 528,
+    "duration": 180,
+    "waveform": "sine",
+    "conditions": ["sleep", "relaxation"],
+    "evidenceTier": "1",
+    "reference": { "url": "https://example.com/deepsleep" }
+  },
+  {
+    "label": "Morning Focus",
+    "frequency": 440,
+    "duration": 120,
+    "waveform": "sine",
+    "conditions": ["focus", "concentration"],
+    "evidenceTier": "2",
+    "reference": { "url": "https://example.com/focus" }
+  },
+  {
+    "label": "Anxiety Relief",
+    "frequency": 396,
+    "duration": 180,
+    "waveform": "sine",
+    "conditions": ["anxiety", "relaxation"],
+    "evidenceTier": "1",
+    "reference": { "url": "https://example.com/anxiety" }
+  },
+  {
+    "label": "Theta Meditation",
+    "frequency": 6,
+    "duration": 300,
+    "waveform": "sine",
+    "conditions": ["meditation", "theta", "sleep"],
+    "evidenceTier": "2",
+    "reference": { "url": "https://example.com/meditation" }
+  }
+]

@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>fReQ Platform v1.1.7</title>
+  <!-- version 1.1.7 -->
+  <style>
+    /* =======================
+       Basic Layout & Styling
+       ======================= */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+    header {
+      background-color: #333;
+      color: #fff;
+      padding: 10px 20px;
+    }
+    header h1 {
+      font-size: 1.5rem;
+    }
+    #tabs {
+      display: flex;
+      background-color: #444;
+    }
+    #tabs button {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      background: #444;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    #tabs button.active {
+      background: #222;
+    }
+    #tabs button:hover {
+      background: #555;
+    }
+    #content {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+    .pane {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      display: none;
+    }
+    .pane.active {
+      display: block;
+    }
+
+    /* =====================
+       Pane‐Specific Styling
+       ===================== */
+    /* Lookup Pane (Left) */
+    #lookup-pane {
+      background-color: #f5f5f5;
+    }
+    #lookup-pane h2 {
+      margin-bottom: 10px;
+    }
+    #condition-input {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+    }
+    #lookup-results {
+      list-style: none;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+    #lookup-results li {
+      padding: 6px 8px;
+      border-bottom: 1px solid #ddd;
+      cursor: pointer;
+    }
+    #lookup-results li:hover {
+      background: #e0e0e0;
+    }
+
+    /* Database Pane (Center) */
+    #database-pane {
+      background-color: #fff;
+    }
+    #database-pane h2 {
+      margin-bottom: 10px;
+    }
+    #search-input {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    table th,
+    table td {
+      border: 1px solid #ccc;
+      padding: 6px 8px;
+      text-align: left;
+    }
+    table th {
+      background: #eee;
+    }
+    table tr:hover {
+      background: #f9f9f9;
+    }
+
+    /* Player Pane (Right) */
+    #player-pane {
+      background-color: #f0f0f0;
+    }
+    #player-pane h2 {
+      margin-bottom: 10px;
+    }
+    #player-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    #frequency-display {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+    }
+    #play-btn,
+    #stop-btn {
+      padding: 10px;
+      border: none;
+      background: #333;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    #play-btn:hover,
+    #stop-btn:hover {
+      background: #555;
+    }
+    #volume-slider {
+      width: 100%;
+    }
+
+    /* Tuner Pane */
+    #tuner-pane {
+      background-color: #fafafa;
+    }
+    #tuner-pane h2 {
+      margin-bottom: 10px;
+    }
+    #tuner-input {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+    }
+
+    /* Presets Pane */
+    #presets-pane {
+      background-color: #fdfdfd;
+    }
+    #presets-pane h2 {
+      margin-bottom: 10px;
+    }
+    #preset-name {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+    }
+    #save-preset-btn,
+    #delete-preset-btn {
+      padding: 8px 12px;
+      border: none;
+      background: #333;
+      color: #fff;
+      cursor: pointer;
+      margin-right: 5px;
+      transition: background 0.2s;
+    }
+    #save-preset-btn:hover,
+    #delete-preset-btn:hover {
+      background: #555;
+    }
+    #presets-list {
+      list-style: none;
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+    #presets-list li {
+      padding: 6px 8px;
+      border-bottom: 1px solid #ddd;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    #presets-list li span {
+      cursor: pointer;
+    }
+    #presets-list li button {
+      background: transparent;
+      border: none;
+      color: #900;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>fReQ Platform <small>v1.1.7</small></h1>
+  </header>
+
+  <!-- =====================
+       Tab Navigation Bar
+       ===================== -->
+  <div id="tabs">
+    <button id="tab-lookup" class="active">Lookup</button>
+    <button id="tab-database">Database</button>
+    <button id="tab-player">Player</button>
+    <button id="tab-tuner">Tuner</button>
+    <button id="tab-presets">Presets</button>
+  </div>
+
+  <!-- =====================
+       Main Content Panes
+       ===================== -->
+  <div id="content">
+    <!-- Lookup Pane (Left) -->
+    <div id="lookup-pane" class="pane active">
+      <h2>Condition Lookup</h2>
+      <input
+        type="text"
+        id="condition-input"
+        placeholder="Type condition (e.g., sleep, pain)..."
+      />
+      <ul id="lookup-results"></ul>
+      <p style="margin-top: 1rem; font-size: 0.9rem; color: #555;">
+        Click a result to load it into the Player.
+      </p>
+    </div>
+
+    <!-- Database Pane (Center) -->
+    <div id="database-pane" class="pane">
+      <h2>Frequency Database</h2>
+      <input
+        type="text"
+        id="search-input"
+        placeholder="Search by condition, source, etc..."
+      />
+      <table>
+        <thead>
+          <tr>
+            <th>Condition</th>
+            <th>Frequency (Hz)</th>
+            <th>Source</th>
+            <th>Category</th>
+          </tr>
+        </thead>
+        <tbody id="db-table-body"></tbody>
+      </table>
+      <p style="font-size: 0.9rem; color: #555;">
+        Click any row to load the frequency into the Player.
+      </p>
+    </div>
+
+    <!-- Player Pane (Right) -->
+    <div id="player-pane" class="pane">
+      <h2>Oscillator Player</h2>
+      <div id="player-controls">
+        <div id="frequency-display">Frequency: <span id="current-freq">—</span> Hz</div>
+        <button id="play-btn">Play</button>
+        <button id="stop-btn" disabled>Stop</button>
+        <label for="volume-slider">Amplitude (0–1):</label>
+        <input
+          type="range"
+          id="volume-slider"
+          min="0"
+          max="1"
+          step="0.01"
+          value="0.5"
+        />
+      </div>
+      <p style="margin-top: 1rem; font-size: 0.9rem; color: #555;">
+        Use the Tuner or select from Lookup/Database to set frequency.
+      </p>
+    </div>
+
+    <!-- Tuner Pane -->
+    <div id="tuner-pane" class="pane">
+      <h2>Tuner</h2>
+      <input
+        type="number"
+        id="tuner-input"
+        placeholder="Enter frequency (Hz)"
+        min="0"
+        step="0.01"
+      />
+      <button id="tuner-set-btn" style="padding: 8px 12px; background: #333; color: #fff; border: none; cursor: pointer; transition: background 0.2s;">
+        Set Frequency
+      </button>
+      <p style="margin-top: 1rem; font-size: 0.9rem; color: #555;">
+        Enter any frequency manually, then press “Set Frequency” to load into the Player.
+      </p>
+    </div>
+
+    <!-- Presets Pane -->
+    <div id="presets-pane" class="pane">
+      <h2>Presets</h2>
+      <input
+        type="text"
+        id="preset-name"
+        placeholder="Preset name..."
+      />
+      <div style="margin-bottom: 10px;">
+        <button id="save-preset-btn">Save Current Frequency</button>
+        <button id="delete-preset-btn">Delete Selected</button>
+      </div>
+      <ul id="presets-list"></ul>
+      <p style="font-size: 0.9rem; color: #555;">
+        Click a preset name to load its frequency into the Player.
+      </p>
+    </div>
+  </div>
+
+  <!-- =====================
+       Core JavaScript Logic
+       ===================== -->
+  <script>
+    // ========
+    // Globals
+    // ========
+    let audioCtx = null;
+    let oscillator = null;
+    let gainNode = null;
+    let currentFrequency = null;
+    let freqData = []; // will hold the loaded freq.json array
+    let presets = {}; // stored in localStorage as JSON { name: freq }
+
+    // ==========================
+    // Tab Navigation Management
+    // ==========================
+    const tabs = {
+      lookup: document.getElementById("tab-lookup"),
+      database: document.getElementById("tab-database"),
+      player: document.getElementById("tab-player"),
+      tuner: document.getElementById("tab-tuner"),
+      presets: document.getElementById("tab-presets"),
+    };
+    const panes = {
+      lookup: document.getElementById("lookup-pane"),
+      database: document.getElementById("database-pane"),
+      player: document.getElementById("player-pane"),
+      tuner: document.getElementById("tuner-pane"),
+      presets: document.getElementById("presets-pane"),
+    };
+
+    function activateTab(name) {
+      // Deactivate all tabs & panes
+      Object.keys(tabs).forEach((key) => {
+        tabs[key].classList.remove("active");
+        panes[key].classList.remove("active");
+      });
+      // Activate requested
+      tabs[name].classList.add("active");
+      panes[name].classList.add("active");
+    }
+
+    Object.keys(tabs).forEach((key) => {
+      tabs[key].addEventListener("click", () => activateTab(key));
+    });
+
+    // ===========
+    // Audio Setup
+    // ===========
+    function initAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        gainNode = audioCtx.createGain();
+        gainNode.gain.value = Number(document.getElementById("volume-slider").value);
+        gainNode.connect(audioCtx.destination);
+      }
+    }
+
+    function startOscillator(freq) {
+      stopOscillator(); // ensure only one active
+      initAudioContext();
+      oscillator = audioCtx.createOscillator();
+      oscillator.frequency.value = freq;
+      oscillator.type = "sine";
+      oscillator.connect(gainNode);
+      oscillator.start();
+      currentFrequency = freq;
+      document.getElementById("current-freq").textContent = freq.toFixed(2);
+      document.getElementById("stop-btn").disabled = false;
+      document.getElementById("play-btn").disabled = true;
+    }
+
+    function stopOscillator() {
+      if (oscillator) {
+        oscillator.stop();
+        oscillator.disconnect();
+        oscillator = null;
+      }
+      document.getElementById("stop-btn").disabled = true;
+      document.getElementById("play-btn").disabled = false;
+      document.getElementById("current-freq").textContent = "—";
+      currentFrequency = null;
+    }
+
+    // ======================
+    // Load freq.json at Init
+    // ======================
+    async function loadFrequencyData() {
+      try {
+        const response = await fetch("freq.json");
+        if (!response.ok) throw new Error("Failed to load freq.json");
+        freqData = await response.json();
+        populateLookupList();
+        populateDatabaseTable(freqData);
+      } catch (err) {
+        console.error("Error loading freq.json:", err);
+      }
+    }
+
+    // =============================
+    // Lookup Pane: Condition Search
+    // =============================
+    const conditionInput = document.getElementById("condition-input");
+    const lookupResults = document.getElementById("lookup-results");
+    function populateLookupList() {
+      // Initially show nothing
+      lookupResults.innerHTML = "";
+    }
+
+    function filterLookup(query) {
+      const matches = freqData.filter((entry) =>
+        entry.condition.toLowerCase().includes(query.toLowerCase())
+      );
+      // Only show top 50 matches to avoid overload
+      const toShow = matches.slice(0, 50);
+      lookupResults.innerHTML = "";
+      toShow.forEach((entry) => {
+        const li = document.createElement("li");
+        li.textContent = `${entry.condition} — ${entry.frequency} Hz (${entry.source})`;
+        li.addEventListener("click", () => {
+          activateTab("player");
+          setFrequencyInPlayer(entry.frequency);
+        });
+        lookupResults.appendChild(li);
+      });
+      if (toShow.length === 0) {
+        const li = document.createElement("li");
+        li.textContent = "No matches found.";
+        li.style.fontStyle = "italic";
+        li.style.cursor = "default";
+        lookupResults.appendChild(li);
+      }
+    }
+
+    conditionInput.addEventListener("input", () => {
+      const q = conditionInput.value.trim();
+      if (q.length === 0) {
+        lookupResults.innerHTML = "";
+        return;
+      }
+      filterLookup(q);
+    });
+
+    // ===================================
+    // Database Pane: Full Table + Search
+    // ===================================
+    const searchInput = document.getElementById("search-input");
+    const dbTableBody = document.getElementById("db-table-body");
+
+    function populateDatabaseTable(dataArray) {
+      dbTableBody.innerHTML = "";
+      dataArray.forEach((entry) => {
+        const tr = document.createElement("tr");
+        const tdCond = document.createElement("td");
+        tdCond.textContent = entry.condition;
+        const tdFreq = document.createElement("td");
+        tdFreq.textContent = entry.frequency;
+        const tdSrc = document.createElement("td");
+        tdSrc.textContent = entry.source;
+        const tdCat = document.createElement("td");
+        tdCat.textContent = entry.category || "";
+        tr.append(tdCond, tdFreq, tdSrc, tdCat);
+        tr.addEventListener("click", () => {
+          activateTab("player");
+          setFrequencyInPlayer(entry.frequency);
+        });
+        dbTableBody.appendChild(tr);
+      });
+    }
+
+    function filterDatabase(query) {
+      const filtered = freqData.filter(
+        (entry) =>
+          entry.condition.toLowerCase().includes(query.toLowerCase()) ||
+          (entry.source && entry.source.toLowerCase().includes(query.toLowerCase())) ||
+          (entry.category && entry.category.toLowerCase().includes(query.toLowerCase()))
+      );
+      populateDatabaseTable(filtered);
+    }
+
+    searchInput.addEventListener("input", () => {
+      const q = searchInput.value.trim();
+      if (q.length === 0) {
+        populateDatabaseTable(freqData);
+      } else {
+        filterDatabase(q);
+      }
+    });
+
+    // ====================
+    // Player Pane Controls
+    // ====================
+    const playBtn = document.getElementById("play-btn");
+    const stopBtn = document.getElementById("stop-btn");
+    const volumeSlider = document.getElementById("volume-slider");
+
+    function setFrequencyInPlayer(freq) {
+      currentFrequency = freq;
+      document.getElementById("current-freq").textContent = freq.toFixed(2);
+      // If already playing, restart oscillator with new freq
+      if (oscillator) {
+        startOscillator(freq);
+      }
+    }
+
+    playBtn.addEventListener("click", () => {
+      if (currentFrequency) {
+        startOscillator(currentFrequency);
+      } else {
+        alert("No frequency loaded. Use Lookup, Database, or Tuner first.");
+      }
+    });
+    stopBtn.addEventListener("click", () => {
+      stopOscillator();
+    });
+    volumeSlider.addEventListener("input", () => {
+      if (gainNode) gainNode.gain.value = Number(volumeSlider.value);
+    });
+
+    // =================
+    // Tuner Pane Logic
+    // =================
+    const tunerInput = document.getElementById("tuner-input");
+    const tunerSetBtn = document.getElementById("tuner-set-btn");
+
+    tunerSetBtn.addEventListener("click", () => {
+      const val = parseFloat(tunerInput.value);
+      if (isNaN(val) || val <= 0) {
+        alert("Enter a valid positive frequency.");
+        return;
+      }
+      activateTab("player");
+      setFrequencyInPlayer(val);
+    });
+
+    // ====================
+    // Presets Pane Logic
+    // ====================
+    const presetNameInput = document.getElementById("preset-name");
+    const savePresetBtn = document.getElementById("save-preset-btn");
+    const deletePresetBtn = document.getElementById("delete-preset-btn");
+    const presetsList = document.getElementById("presets-list");
+    let selectedPreset = null;
+
+    // Load presets from localStorage
+    function loadPresets() {
+      const stored = localStorage.getItem("freqPlayerPresets");
+      presets = stored ? JSON.parse(stored) : {};
+      renderPresetsList();
+    }
+
+    function savePresetsToStorage() {
+      localStorage.setItem("freqPlayerPresets", JSON.stringify(presets));
+    }
+
+    function renderPresetsList() {
+      presetsList.innerHTML = "";
+      Object.keys(presets).forEach((name) => {
+        const li = document.createElement("li");
+        const span = document.createElement("span");
+        span.textContent = `${name} — ${presets[name]} Hz`;
+        span.addEventListener("click", () => {
+          // Load into player
+          activateTab("player");
+          setFrequencyInPlayer(presets[name]);
+        });
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "✕";
+        delBtn.title = "Delete this preset";
+        delBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          delete presets[name];
+          savePresetsToStorage();
+          renderPresetsList();
+        });
+        li.append(span, delBtn);
+        presetsList.appendChild(li);
+      });
+      if (Object.keys(presets).length === 0) {
+        const li = document.createElement("li");
+        li.textContent = "No presets saved.";
+        li.style.fontStyle = "italic";
+        presetsList.appendChild(li);
+      }
+    }
+
+    savePresetBtn.addEventListener("click", () => {
+      const name = presetNameInput.value.trim();
+      if (!name) {
+        alert("Enter a name for the preset.");
+        return;
+      }
+      if (!currentFrequency) {
+        alert("No frequency loaded to save.");
+        return;
+      }
+      presets[name] = currentFrequency;
+      savePresetsToStorage();
+      renderPresetsList();
+      presetNameInput.value = "";
+    });
+
+    deletePresetBtn.addEventListener("click", () => {
+      const name = presetNameInput.value.trim();
+      if (!name) {
+        alert("Enter the name of the preset to delete.");
+        return;
+      }
+      if (presets[name] !== undefined) {
+        delete presets[name];
+        savePresetsToStorage();
+        renderPresetsList();
+        presetNameInput.value = "";
+      } else {
+        alert(`No preset named "${name}" found.`);
+      }
+    });
+
+    // =======================
+    // Initialization Sequence
+    // =======================
+    window.addEventListener("DOMContentLoaded", () => {
+      loadFrequencyData();
+      loadPresets();
+    });
+  </script>
+</body>
+</html>

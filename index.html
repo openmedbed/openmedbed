@@ -1,1 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>fReQ Platform v1.4.1</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
 
+<body>
+  <header>
+    <h1>fReQ Platform v1.4.1</h1>
+  </header>
+
+  <div id="container">
+    <!-- 1) CONDITIONS PANE (LEFT) -->
+    <section id="conditions-pane">
+      <h2>1) Conditions</h2>
+      <div class="content">
+        <input
+          type="text"
+          id="conditionInput"
+          placeholder="Type a condition (e.g. 'sleep')…"
+          list="conditionList"
+          autocomplete="off"
+        />
+        <datalist id="conditionList"></datalist>
+        <button id="searchBtn">🔍 Search</button>
+        <p class="hint">(Results will appear in the center pane.)</p>
+
+        <div id="treatment-pane" style="margin-top:12px;">
+          <label for="treatmentSelect">Treatment Option:</label>
+          <select id="treatmentSelect">
+            <option value="">-- Select a treatment --</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2) DATABASE ENTRY FORM & RESULTS PANE (CENTER) -->
+    <section id="database-pane">
+      <h2>2) Database Editor</h2>
+      <div class="content">
+        <div id="entryForm">
+          <h3 id="formTitle">Add New Entry</h3>
+          <label for="entryLabel">Label:</label>
+          <input type="text" id="entryLabel" placeholder="e.g. Sleep Stage 1" />
+
+          <label for="entryFrequency">Frequency (Hz):</label>
+          <input
+            type="number"
+            id="entryFrequency"
+            placeholder="e.g. 8"
+            step="0.1"
+            min="0"
+          />
+
+          <label for="entryDuration">Duration (s):</label>
+          <input
+            type="number"
+            id="entryDuration"
+            placeholder="e.g. 600"
+            step="0.1"
+            min="0"
+          />
+
+          <label for="entryWaveform">Waveform:</label>
+          <select id="entryWaveform">
+            <option value="sine" selected>sine</option>
+            <option value="square">square</option>
+            <option value="triangle">triangle</option>
+            <option value="sawtooth">sawtooth</option>
+          </select>
+
+          <label>Conditions:</label>
+          <div class="tag-input" id="newConditionsContainer">
+            <ul id="newConditionsTags"></ul>
+            <input
+              type="text"
+              id="newConditionsInput"
+              placeholder="Type a condition and press ↵ or ,"
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="form-buttons">
+            <button id="addEntryBtn">➕ Add Entry</button>
+            <button id="clearFormBtn">✕ Clear Form</button>
+          </div>
+        </div>
+
+        <button id="addAllBtn">➕ Add All Results to Sequence</button>
+
+        <table id="resultsTable">
+          <thead>
+            <tr>
+              <th>Label</th>
+              <th>Freq (Hz)</th>
+              <th>Dur (s)</th>
+              <th>Waveform</th>
+              <th>Conditions</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+
+        <button id="toggleDbEditorBtn">► Raw JSON Editor</button>
+        <div id="dbEditor" style="display:none; flex-direction:column; gap:8px;">
+          <textarea
+            id="dbEditorTextarea"
+            placeholder="Edit JSON here…"
+            style="width:100%; height:150px;"
+          ></textarea>
+          <div class="db-buttons">
+            <button id="saveDbBtn">Save Database</button>
+            <button id="previewDbBtn">Preview JSON</button>
+          </div>
+          <div id="dbPreview"><em>JSON preview will appear here</em></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3) fReQ PLAYER PANE (RIGHT) -->
+    <section id="player-pane">
+      <h2>3) fReQ Player</h2>
+      <div class="player-content" style="display:flex; flex-direction:column; gap:12px;">
+        <div id="tunerControls">
+          <label for="tunerFrequency">Frequency (Hz):</label>
+          <input
+            type="number"
+            id="tunerFrequency"
+            placeholder="e.g. 432"
+            min="0"
+            step="0.1"
+          />
+
+          <label for="tunerDuration">Duration (s):</label>
+          <input
+            type="number"
+            id="tunerDuration"
+            placeholder="e.g. 60"
+            min="0"
+            step="0.1"
+          />
+
+          <label for="tunerWaveform">Waveform:</label>
+          <select id="tunerWaveform">
+            <option value="sine" selected>sine</option>
+            <option value="square">square</option>
+            <option value="triangle">triangle</option>
+            <option value="sawtooth">sawtooth</option>
+          </select>
+
+          <button id="addTunerBtn">➕ Add to Sequence</button>
+        </div>
+
+        <ul id="sequenceList" style="list-style:none; padding:0; border:1px solid #ddd; min-height:80px; border-radius:4px; padding:8px;">
+          <li style="font-style:italic; color:#666;">(empty)</li>
+        </ul>
+
+        <div id="playControls" style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button id="playBtn">▶ Play Sequence</button>
+          <button id="pauseBtn" disabled>⏸ Pause</button>
+          <button id="nextBtn" disabled>⏭ Next</button>
+          <button id="stopBtn">⏹ Stop Sequence</button>
+          <button id="clearSequenceBtn">✕ Clear Sequence</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
