@@ -1,5 +1,6 @@
-Just a hardware guy, wasting all his time trying to code!
-
+Mediocrity is self inflicted,
+Genius is self bestowed.
+Walter Russell
 <!--
 **openmedbed/openmedbed** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
 
